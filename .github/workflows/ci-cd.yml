@@ -1,13 +1,11 @@
 name: CI/CD Pipeline
 
-name: Pylint
-
 on: 
   push:
     branches: ["main"]
-  
-  permissions:
-    contents: read
+
+permissions:
+  contents: read
 
 jobs:
   lint:
