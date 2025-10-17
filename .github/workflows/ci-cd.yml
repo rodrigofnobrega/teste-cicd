@@ -43,7 +43,7 @@ jobs:
       # 4. Executa o linter (pylint) para análise estática do código
       - name: Analyse code with pylint
         run: |
-          pylint $(git ls-files '*.py')
+          python -m pylint $(git ls-files '*.py')
 
       # Etapa futura sugerida: Adicionar testes com pytest
       # - name: Run tests with pytest
