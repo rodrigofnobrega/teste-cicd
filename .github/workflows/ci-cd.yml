@@ -82,12 +82,33 @@ jobs:
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
           port: 22
           script: |
-            git config --global url."https://${{ secrets.PERSONAL_GITHUB_TOKEN }}:@github.com".insteadOf "https://github.com"
-            cd /root/python
-            git pull origin main
-            python3 -m venv venv
-            source venv/bin/activate
+            # ** 1. Defina o diretório do seu projeto **
+            PROJECT_DIR="/home/${{ secrets.VPS_USERNAME }}/meu-projeto-fastapi"
+            REPO_URL="https://github.com/${{ github.repository }}.git"
 
+            # Cria o diretório se ele não existir
+            mkdir -p $PROJECT_DIR
+            cd $PROJECT_DIR
+
+            # ** 2. Verifica se o repositório já foi clonado **
+            if [ -d ".git" ]; then
+              # Se já existe, apenas puxe as atualizações
+              echo "Repositório encontrado. Puxando atualizações..."
+              git pull origin main
+            else
+              # Se não existe, clone o repositório
+              echo "Repositório não encontrado. Clonando..."
+              # Garante que as dependências do sistema estão instaladas
+              # ATENÇÃO: O usuário SSH precisa ter permissão para executar sudo sem senha
+              sudo apt-get update && sudo apt-get install -y python3-venv git
+              git clone $REPO_URL .
+              # Cria o ambiente virtual
+              python3 -m venv venv
+            fi
+            
+            # ** 3. Instala dependências e reinicia a aplicação **
+            echo "Ativando ambiente virtual e instalando dependências..."
+            source venv/bin/activate
             pip install -r requirements.txt
 
       - name: Update deployment Status (success)
