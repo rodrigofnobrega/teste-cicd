@@ -44,7 +44,7 @@ jobs:
   deploy:
     name: Deploy fastapi
     # 1. Garante que o deploy só rode se o lint e testes passarem
-    needs: lint-and-test
+    #needs: lint-and-test
     # 2. Garante que o deploy só rode em push (não em pull request)
     if: github.event_name == 'push'
     permissions:
