@@ -36,23 +36,15 @@ jobs:
         run: |
           python -m pylint $(git ls-files '*.py')
 
-      # - name: Run tests with pytest
-      #   run: |
-      #     pip install pytest
-      #     pytest
-
   deploy:
     name: Deploy fastapi
-    # 1. Garante que o deploy só rode se o lint e testes passarem
     # needs: lint-and-test
-    # 2. Garante que o deploy só rode em push (não em pull request)
     if: github.event_name == 'push'
     permissions:
-      deployments: write # Permissão necessária se usar "environments"
+      deployments: write 
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        # Atualizado para v4 por consistência
         uses: actions/checkout@v4
 
       - name: Set up Docker Buildx
@@ -63,10 +55,6 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-
-      # 3. STEPS REMOVIDOS ("Enter directory" e "Get project code")
-      # Eles eram desnecessários. O 'actions/checkout' acima já
-      # baixou o código para o diretório de trabalho.
 
       - name: Build and push Docker image
         run: |
