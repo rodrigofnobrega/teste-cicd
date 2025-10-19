@@ -44,7 +44,7 @@ jobs:
   deploy:
     name: Deploy fastapi
     # 1. Garante que o deploy só rode se o lint e testes passarem
-    #needs: lint-and-test
+    needs: lint-and-test
     # 2. Garante que o deploy só rode em push (não em pull request)
     if: github.event_name == 'push'
     permissions:
@@ -78,8 +78,8 @@ jobs:
       - name: Deploy to Server
         uses: appleboy/ssh-action@v0.1.10
         with:
-          host: ${{ secrets.SERVER_IP }}
-          username: ${{ secrets.SERVER_USER }}
+          host: ${{ secrets.VPS_IP }}
+          username: ${{ secrets.VPS_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             docker pull ${{ secrets.DOCKER_USERNAME }}/fastapi-app:latest
