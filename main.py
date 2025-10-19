@@ -14,9 +14,8 @@ def read_root():
     return {"Hello": "World"}
 
 @app.get("/plants")
-def read_root():
+def read_plant():
     """
     Retorna o nome de uma planta.
     """
     return {"Planta": "Samambaia"}
-
