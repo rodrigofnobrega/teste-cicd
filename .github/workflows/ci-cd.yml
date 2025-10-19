@@ -73,7 +73,7 @@ jobs:
 
     - name: Enter directory project
       run: |
-          PROJECT_DIR="/home/${{ secrets.VPS_USERNAME }}/meu-projeto-fastapi"
+          PROJECT_DIR="/home/root/meu-projeto-fastapi"
 
           # Cria o diretório se ele não existir
           mkdir -p $PROJECT_DIR
