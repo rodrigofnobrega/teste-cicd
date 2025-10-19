@@ -26,3 +26,10 @@ def read_arvore():
     Retorna o nome de uma arvore.
     """
     return {"Arvore": "Ipê"}
+
+@app.get("/horta")
+def check_horta_status():
+    """
+    Retorna o status da horta.
+    """
+    return {"status": "online"}
