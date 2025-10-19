@@ -72,11 +72,19 @@ jobs:
 
     - name: Enter directory project
       run: |
-          PROJECT_DIR="/opt/meu-projeto-fastapi"
+        PROJECT_DIR="/opt/meu-projeto-fastapi"
 
-          # Cria o diretório se ele não existir
-          mkdir -p $PROJECT_DIR
-          cd $PROJECT_DIR
+        # Cria o diretório se ele não existir
+        mkdir -p $PROJECT_DIR
+        cd $PROJECT_DIR
+
+    - name: Get project code
+      run: |
+        if [ -d "$PROJECT_DIR/.git" ]; then
+          git -C "$PROJECT_DIR" pull origin main
+        else
+          git clone https://github.com/${{ github.repository }}.git "$PROJECT_DIR"
+        fi
 
     - name: Build and push Docker image
       run: |
