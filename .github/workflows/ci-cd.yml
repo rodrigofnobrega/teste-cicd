@@ -97,8 +97,8 @@ jobs:
             cd "$PROJECT_DIR"
 
             # Build e (re)start em background
-            docker compose build
-            docker compose up -d
+            docker-compose build
+            docker-compose up -d
 
             # Smoke test
             for i in {1..30}; do
