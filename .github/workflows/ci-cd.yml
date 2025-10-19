@@ -53,78 +53,44 @@ jobs:
       #     pytest
 
   deploy:
-    name: Deploy project
+    name: Deploy fastapi
     permissions:
       deployments: write
-      packages: write
-      contents: read
     runs-on: ubuntu-latest
-    concurrency:
-      group: deploy-main
-      cancel-in-progress: true
     steps:
-      - name: Checkout Repository
-        uses: 'actions/checkout@v4'
-        with:
-          ref: main
-          token: ${{ secrets.PERSONAL_GITHUB_TOKEN }}
-      - name: Create GitHub deployment
-        uses: chrnorm/deployment-action@v2
-        id: deployment
-        with:
-          token: '${{ github.token }}'
-          environment-url: ${{ vars.MY_APP }}
-          environment: production
-      - name: Set up SSH Key and Deploy my App on Server
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.VPS_IP }}
-          username: ${{ secrets.VPS_USERNAME }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          passphrase: ${{ secrets.SSH_PASSPHRASE }}
-          port: 22
-          script: |
-            set -euo pipefail
-            PROJECT_DIR="/home/${{ secrets.VPS_USERNAME }}/meu-projeto-fastapi"
+    - name: Checkout repository
+      uses: actions/checkout@v3
 
-            mkdir -p "$PROJECT_DIR"
-            if [ -d "$PROJECT_DIR/.git" ]; then
-              git -C "$PROJECT_DIR" pull origin main
-            else
-              git clone https://github.com/${{ github.repository }}.git "$PROJECT_DIR"
-            fi
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
 
-            cd "$PROJECT_DIR"
+    - name: Login to DockerHub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
 
-            # Build e (re)start em background
-            docker-compose build
-            docker-compose up -d
+    - name: Enter directory project
+      run: |
+          PROJECT_DIR="/opt/meu-projeto-fastapi"
 
-            # Smoke test
-            for i in {1..30}; do
-              if curl -fsS http://localhost:8000/healthz >/dev/null; then
-                echo "Health OK";
-                exit 0
-              fi
-              sleep 2
-              done
-              echo "Healthcheck falhou";
-              exit 1
+          # Cria o diretório se ele não existir
+          mkdir -p $PROJECT_DIR
+          cd $PROJECT_DIR
 
-      - name: Update deployment Status (success)
-        if: success()
-        uses: chrnorm/deployment-status@v2
-        with:
-          token: '${{ github.token }}'
-          environment-url: ${{ vars.MY_APP }}
-          state: 'success'
-          deployment-id: ${{ steps.deployment.outputs.deployment_id }}
+    - name: Build and push Docker image
+      run: |
+        docker build -t ${{ secrets.DOCKER_USERNAME }}/fastapi-app:latest .
+        docker push ${{ secrets.DOCKER_USERNAME }}/fastapi-app:latest
 
-      - name: Update deployment status (failure)
-        if: failure()
-        uses: chrnorm/deployment-status@v2
-        with:
-          token: '${{ github.token }}'
-          environment-url: ${{ vars.MY_APP }}
-          state: 'failure'
-          deployment-id: ${{ steps.deployment.outputs.deployment_id }}
+    - name: Deploy to Server
+      uses: appleboy/ssh-action@v0.1.10
+      with:
+        host: ${{ secrets.SERVER_IP }}
+        username: ${{ secrets.SERVER_USER }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        script: |
+          docker pull ${{ secrets.DOCKER_USERNAME }}/fastapi-app:latest
+          docker stop fastapi-app || true
+          docker rm fastapi-app || true
+          docker run -d --name fastapi-app -p 8000:8000 ${{ secrets.DOCKER_USERNAME }}/fastapi-app:latest
