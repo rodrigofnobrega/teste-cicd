@@ -19,3 +19,10 @@ def read_plant():
     Retorna o nome de uma planta.
     """
     return {"Planta": "Samambaia"}
+
+@app.get("/arvore")
+def read_arvore():
+    """
+    Retorna o nome de uma arvore.
+    """
+    return {"Arvore": "Ipê"}
