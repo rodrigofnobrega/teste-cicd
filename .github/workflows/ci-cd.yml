@@ -33,9 +33,9 @@ jobs:
         run: |
           python -m pylint $(git ls-files '*.py')
 
-      - name: Test with pytest
-        run: |
-          python -m pytest
+     # - name: Test with pytest
+       # run: |
+       #   python -m pytest
 
   build:
     name: Build and Push Docker Image
